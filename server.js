@@ -4,8 +4,9 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended : true}));
 const MongoClient = require('mongodb').MongoClient;
 app.set('view engine', 'ejs');
-
 app.set('/public', express.static('public'));
+const methodOverrider = require('method-override')
+app.use(methodOverrider('_method'))
 
 var db;
 MongoClient.connect('mongodb+srv://mongodb:mongodb@cluster0.n1atu.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', function(error, client){
@@ -75,3 +76,19 @@ app.get('/detail/:id', function(req, res){
         
     })
 })
+
+app.get('/edit/:id', function(req, res){
+    db.collection('post').findOne({_id : parseInt(req.params.id)}, function(err, result){
+        console.log(result)
+        res.render('edit.ejs', { post : result });
+    })
+    
+})
+
+app.put('/edit', function(req, res){
+    //폼에담긴 제목, 날짜 데이터를 가지고 db.collection  에다가 업데이트(set)
+    db.collection('post').updateOne({ _id : parseInt(req.body.id) }, {$set : { 제목 : req.body.title, 날짜 : req.body.date }}, function(err, result){
+        console.log('수정완료')
+        res.redirect('/list')
+    });
+});
