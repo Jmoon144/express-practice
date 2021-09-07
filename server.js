@@ -8,8 +8,10 @@ app.set('/public', express.static('public'));
 const methodOverrider = require('method-override')
 app.use(methodOverrider('_method'))
 
+require('dotenv').config()
+
 var db;
-MongoClient.connect('mongodb+srv://mongodb:mongodb@cluster0.n1atu.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', function(error, client){
+MongoClient.connect(process.env.DB_URL, function(error, client){
 
     if (error) return console.log(error)
 
@@ -19,7 +21,7 @@ MongoClient.connect('mongodb+srv://mongodb:mongodb@cluster0.n1atu.mongodb.net/my
     //     console.log('저장완료');
     // });
 
-    app.listen(8080, function(){
+    app.listen(process.env.PORT, function(){
         console.log('listening on 8080')
     });
     
