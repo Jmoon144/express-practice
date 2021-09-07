@@ -115,6 +115,20 @@ app.post('/login', passport.authenticate('local', {
     res.redirect('/')
 });
 
+//미들웨어는 중앙에 넣어줍니다.
+app.get('/mypage', 로그인확인, function(req, res){
+    // console.log(req.user)
+    res.render('mypage.ejs', {사용자 : req.user})
+});
+
+function 로그인확인(req, res, next){
+    if (req.user){
+        next()
+    } else {
+        res.send('로그인 확인해주세요')
+    }
+};
+
 passport.use(new LocalStrategy({
     usernameField: 'id',
     passwordField: 'pw',
@@ -143,6 +157,9 @@ passport.serializeUser(function(user, done){
     done(null, user.id)
 });
 
+//로그인한 유저의 개인정보를 db에서 찾는 역할
 passport.deserializeUser(function(아이디, done){
-    done(null, {})
+    db.collection('login').findOne({id : 아이디}, function(err, result){
+        done(null, result)
+    })
 });
