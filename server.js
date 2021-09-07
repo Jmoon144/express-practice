@@ -22,6 +22,21 @@ MongoClient.connect('mongodb+srv://mongodb:mongodb@cluster0.n1atu.mongodb.net/my
     app.listen(8080, function(){
         console.log('listening on 8080')
     });
+    
+    app.post('/sign', function(req, res){
+        res.send('회원가입 완료')
+        console.log(req.body)
+        db.collection('counter').findOne({name : '아이디갯수'}, function(err, result){
+            console.log(result.totalId)
+            var 총아이디갯수 = result.totalId;
+
+            db.collection('login').insertOne({ _id : 총아이디갯수 + 1, id : req.body.id, password : req.body.pw})
+
+                db.collection('counter').updateOne({name : '아이디갯수'}, { $inc: {totalId : 1}}, function(err, result){
+                    if(err){return console.log(err)}
+                });
+        })
+    });
 
     app.post('/add', function(req, res){
         
@@ -51,6 +66,11 @@ app.get('/', function(req, res){
 app.get('/write', function(req, res){
     // res.sendFile(__dirname + '/write.ejs')
     res.render('write.ejs');
+});
+
+app.get('/signup', function(req, res){
+    // res.sendFile(__dirname + '/write.ejs')
+    res.render('signup.ejs');
 });
 
 app.get('/list', function(req, res){
@@ -92,6 +112,8 @@ app.put('/edit', function(req, res){
         res.redirect('/list')
     });
 });
+
+
 
 //세션방식 다운받은거
 const passport = require('passport');
@@ -143,7 +165,7 @@ passport.use(new LocalStrategy({
       // 결과에 일치하는게 없을 때 에러처리
       if (!result) return done(null, false, { message: '존재하지않는 아이디입니다.' })
       // 일치하는게 있을 때 입력한 비번과 결과 pw 비교
-      if (입력한비번 == result.pw) {
+      if (입력한비번 == result.password) {
         return done(null, result)
       } else {
         return done(null, false, { message: '비밀번호를 확인해주세요.' })
