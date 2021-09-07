@@ -92,3 +92,57 @@ app.put('/edit', function(req, res){
         res.redirect('/list')
     });
 });
+
+//세션방식 다운받은거
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const session = require('express-session');
+
+//미들웨어(app.use) = 요청, 응답 중간에 코드 실행하고 싶을 때 사용
+app.use(session({secret : '비밀코드', resave : true, saveUninitialized : false}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.get('/login', function(req, res){
+    res.render('login.ejs')
+});
+
+//passport로그인 쉽게 해줌, authenticate()를 통해 인증
+//redirect => 여기로 보내주세요
+app.post('/login', passport.authenticate('local', {
+    failureRedirect : '/fail'
+}), function(req, res){
+    res.redirect('/')
+});
+
+passport.use(new LocalStrategy({
+    usernameField: 'id',
+    passwordField: 'pw',
+    session: true, //로그인 후 세션 저장
+    passReqToCallback: false,
+    //사용자 입력한 내용 인증하는 콜백함수
+  }, function (입력한아이디, 입력한비번, done) {
+    console.log(입력한아이디, 입력한비번);
+    //현재는 암호화 하지 않기 때문에 보안이 좋지 않기 때문에 추후 jwt로 수정 예정
+    db.collection('login').findOne({ id: 입력한아이디 }, function (err, result) {
+      if (err) return done(err)
+      // 결과에 일치하는게 없을 때 에러처리
+      if (!result) return done(null, false, { message: '존재하지않는 아이디입니다.' })
+      // 일치하는게 있을 때 입력한 비번과 결과 pw 비교
+      if (입력한비번 == result.pw) {
+        return done(null, result)
+      } else {
+        return done(null, false, { message: '비밀번호를 확인해주세요.' })
+      }
+    })
+  }));
+
+//세션을 저장시키는 코드(로그인 성공시 발동)
+//세션의 id정보를 쿠키로 보냄
+passport.serializeUser(function(user, done){
+    done(null, user.id)
+});
+
+passport.deserializeUser(function(아이디, done){
+    done(null, {})
+});
