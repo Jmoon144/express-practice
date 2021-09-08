@@ -212,3 +212,8 @@ app.delete('/delete', function(req, res){
         res.status(200).send({ Message : 'SUCCESS'});
     });
 });
+
+
+app.use('/shop', require('./routes/shop.js'));
+
+app.use('/board/sub', require('./routes/board.js'));
