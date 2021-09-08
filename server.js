@@ -24,21 +24,6 @@ MongoClient.connect(process.env.DB_URL, function(error, client){
     app.listen(process.env.PORT, function(){
         console.log('listening on 8080')
     });
-    
-    app.post('/sign', function(req, res){
-        res.send('회원가입 완료')
-        console.log(req.body)
-        db.collection('counter').findOne({name : '아이디갯수'}, function(err, result){
-            console.log(result.totalId)
-            var 총아이디갯수 = result.totalId;
-
-            db.collection('login').insertOne({ _id : 총아이디갯수 + 1, id : req.body.id, password : req.body.pw})
-
-                db.collection('counter').updateOne({name : '아이디갯수'}, { $inc: {totalId : 1}}, function(err, result){
-                    if(err){return console.log(err)}
-                });
-        })
-    });
 
     app.post('/add', function(req, res){
         
@@ -82,15 +67,6 @@ app.get('/list', function(req, res){
     });
 });
 
-app.delete('/delete', function(req, res){
-    console.log(req.body)
-    req.body._id = parseInt(req.body._id);
-    db.collection('post').deleteOne(req.body, function(err, result){
-        console.log('삭제완료');
-        res.status(200).send({ Message : 'SUCCESS'});
-    });
-});
-
 app.get('/detail/:id', function(req, res){
     db.collection('post').findOne({_id : parseInt(req.params.id)}, function(err, result){
         console.log(result);
@@ -115,7 +91,30 @@ app.put('/edit', function(req, res){
     });
 });
 
-
+app.get('/search', function(req, res){
+    var 검색조건 = [
+        {
+            $search: {
+                index: 'titleSearch', // 인덱스 이름
+                text: {
+                    query: req.query.value,
+                    path: '제목' // 여러개 찾고 싶으면 ['제목', '날짜']
+                }
+            }
+        },
+        // 정렬
+        // { $sort : { _id : 1 }},
+        // 검색 수
+        // { $limit : 10}
+        //검색 score가져오기(idx)
+        // { $project : { 제목 : 1, _id: 0, score: { $meta: "searchScore"} } }
+    ]
+    console.log(req.query.value);
+    db.collection('post').aggregate(검색조건).toArray((err, result)=>{
+        console.log(result)
+        res.render('search.ejs', {posts : result})
+    });
+});
 
 //세션방식 다운받은거
 const passport = require('passport');
@@ -186,4 +185,30 @@ passport.deserializeUser(function(아이디, done){
     db.collection('login').findOne({id : 아이디}, function(err, result){
         done(null, result)
     })
+});
+
+app.post('/sign', function(req, res){
+    res.send('회원가입 완료')
+    console.log(req.body)
+    db.collection('counter').findOne({name : '아이디갯수'}, function(err, result){
+        console.log(result.totalId)
+        var 총아이디갯수 = result.totalId;
+
+        db.collection('login').insertOne({ _id : 총아이디갯수 + 1, id : req.body.id, password : req.body.pw})
+
+            db.collection('counter').updateOne({name : '아이디갯수'}, { $inc: {totalId : 1}}, function(err, result){
+                if(err){return console.log(err)}
+            });
+    })
+});
+
+app.delete('/delete', function(req, res){
+    console.log(req.body)
+    req.body._id = parseInt(req.body._id);
+    var 삭제할데이터 = { _id : req.body._id, 작성자 : req.user._id }
+    db.collection('post').deleteOne(삭제할데이터, function(err, result){
+        console.log('삭제완료');
+        if(result) {console.log(result)}
+        res.status(200).send({ Message : 'SUCCESS'});
+    });
 });
