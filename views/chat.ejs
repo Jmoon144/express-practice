@@ -46,9 +46,9 @@
 
     <script>
 
-        $('#join1').click(function(){
-            var socket = io('/채팅방1');
-        
+        var socket = io('/채팅방1');
+
+
 
         $('#button-addon2').click(function(){
             socket.emit('인사말', $('#main-input').val() );
@@ -58,7 +58,18 @@
             $('.list-group').append('<li class="list-group-item">'+ data +'</li>');
             $('.list-group').scrollTop( $('.list-group').prop('scrollHeight') );
         });
-    });
+
+        //$('#join1').click(function(){
+
+        //$('#button-addon2').click(function(){
+            //socket.emit('인사말', $('#main-input').val() );
+        //});
+
+        //socket.on('퍼트리기', function(data){
+            //$('.list-group').append('<li class="list-group-item">'+ data +'</li>');
+            //$('.list-group').scrollTop( $('.list-group').prop('scrollHeight') );
+        //});
+    //});
         
 
     </script>
