@@ -40,11 +40,14 @@
         <div class="input-group-append">
           <button class="btn btn-outline-secondary" type="button" id="button-addon2">전송</button>
         </div>
-    </div> 
+    </div>
 
+    <button id="join1">채팅방1</button>
 
     <script>
-        var socket = io();
+
+        $('#join1').click(function(){
+            var socket = io('/채팅방1');
         
 
         $('#button-addon2').click(function(){
@@ -55,6 +58,8 @@
             $('.list-group').append('<li class="list-group-item">'+ data +'</li>');
             $('.list-group').scrollTop( $('.list-group').prop('scrollHeight') );
         });
+    });
+        
 
     </script>
 

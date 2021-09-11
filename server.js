@@ -241,3 +241,16 @@ io.on('connection', function(socket){
     });
 
 });
+
+//채팅방 만들기
+var chat1 = io.of('/채팅방1');
+chat1.on('connection', function(socket){
+    console.log('채팅방1에 연결되었습니다.');
+
+    socket.on('인사말', function(data){
+        console.log(data)
+        //모든참여자한테 전파하는법
+        chat1.emit('퍼트리기', data)
+    });
+
+});
