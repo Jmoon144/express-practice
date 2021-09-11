@@ -233,8 +233,11 @@ app.get('/chat', function(req, res){
 
 io.on('connection', function(socket){
     console.log('연결되었습니다.');
+
     socket.on('인사말', function(data){
         console.log(data)
-        io.emit('대답', data)
+        //모든참여자한테 전파하는법
+        io.emit('퍼트리기', data)
     });
+
 });
