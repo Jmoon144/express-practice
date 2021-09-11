@@ -1,5 +1,10 @@
 const express = require('express');
 const app = express();
+//웹소켓
+const http = require('http').createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(http);
+
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended : true}));
 const MongoClient = require('mongodb').MongoClient;
@@ -21,7 +26,7 @@ MongoClient.connect(process.env.DB_URL, function(error, client){
     //     console.log('저장완료');
     // });
 
-    app.listen(process.env.PORT, function(){
+    http.listen(process.env.PORT, function(){
         console.log('listening on 8080')
     });
 
@@ -217,3 +222,19 @@ app.delete('/delete', function(req, res){
 app.use('/shop', require('./routes/shop.js'));
 
 app.use('/board/sub', require('./routes/board.js'));
+
+
+
+//웹소켓으로 채팅서비스 만들기
+//서버랑 socket으로 문자 주고 받기
+app.get('/chat', function(req, res){
+    res.render('chat.ejs');
+});
+
+io.on('connection', function(socket){
+    console.log('연결되었습니다.');
+    socket.on('인사말', function(data){
+        console.log(data)
+        io.emit('대답', data)
+    });
+});
